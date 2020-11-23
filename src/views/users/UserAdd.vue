@@ -75,7 +75,17 @@ export default {
 			this.newUser.avatar = this.$refs.avatarInput.files[0].name;
 		},
 		saveNewUser() {
-			if (
+			// if (
+			// 	this.newUser.userName != "" &&
+			// 	this.newUser.name != "" &&
+			// 	this.newUser.age > 0 &&
+			// 	this.newUser.avatar != ""
+			// ) {
+			// 	this.$emit("saveNewUser", this.newUser);
+			// }
+			if (this.userEdit != null) {
+				this.$emit("saveUser", this.newUser);
+			} else if (
 				this.newUser.userName != "" &&
 				this.newUser.name != "" &&
 				this.newUser.age > 0 &&
@@ -147,20 +157,13 @@ export default {
 .fileAvatar {
 	display: none;
 }
-/* .user__add__info-file input {
-	display: none;
-}
-.user__add__info-file a:hover,
-.user__add__info-file a:active {
-	cursor: pointer;
-} */
+
 .user__add__info__inputfile {
 	margin: 10px 5px;
 	width: 65%;
 	float: right;
 	height: 25px;
 	border-radius: 8px;
-	/* display: none; */
 	display: flex;
 	font-size: 18px;
 	padding: 7px 40px 7px;

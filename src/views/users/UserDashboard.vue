@@ -92,6 +92,7 @@
 				@saveNewUser="saveNewUser"
 				:userEdit="userEdit"
 				@cancel="cancle"
+				@saveUser="saveUser"
 			></UserAdd>
 		</div>
 		<div class="user__dashboard__paging">
@@ -178,6 +179,16 @@ export default {
 				.then(() => {
 					this.getAllUsers();
 				})
+				.catch((err) => console.log(err));
+		},
+		async saveUser(userEdit) {
+			this.isActiveAddUser = false;
+			await this.axios
+				.put(
+					"https://5fb6229236e2fa00166a4f32.mockapi.io/api/v1/users/" +
+						userEdit.id,
+					userEdit
+				)
 				.catch((err) => console.log(err));
 		},
 		chooseDeleteUser(index) {
