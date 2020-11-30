@@ -28,6 +28,15 @@
 			<a class="user__dashboard__action-add" @click="activeAddUser"
 				>Thêm người dùng</a
 			>
+			<div class="user__dashboard__add" v-if="isActiveAddUser">
+				<UserAdd
+					:user="user"
+					@cancel="cancle"
+					@saveUser="saveUser"
+					:isActiveAddUser="isActiveAddUser"
+					>Thêm mới user</UserAdd
+				>
+			</div>
 		</div>
 		<div class="user__dashboard__table">
 			<table>
@@ -68,6 +77,11 @@
 								color="#fff"
 							></vue-fontawesome
 						></a>
+						<div class="user__dashboard__add " v-if="isActiveEditUser">
+							<UserAdd :user="user" @cancel="cancle" @saveUser="saveUser"
+								>Sửa thông tin người dùng</UserAdd
+							>
+						</div>
 						<a class="action-delete" @click="chooseDeleteUser(index)"
 							><vue-fontawesome
 								icon="trash-o"
@@ -75,26 +89,19 @@
 								color="#fff"
 							></vue-fontawesome
 						></a>
+						<div class="user__dashboard__delete" v-if="isActiveDeleteUser">
+							<UserDelete
+								:userDelete="userDelete"
+								@cancelDeleteUser="cancelDeleteUser"
+								>Bạn có chắc chắn muốn xoá người dùng
+								{{ user.userName }}</UserDelete
+							>
+						</div>
 					</td>
 				</tr>
 			</table>
+		</div>
 
-			<div class="user__dashboard__delete" v-if="isActiveDeleteUser">
-				<UserDelete
-					:userDelete="userDelete"
-					@deleteUser="deleteUser"
-					@cancelDeleteUser="cancelDeleteUser"
-				></UserDelete>
-			</div>
-		</div>
-		<div class="user__dashboard__add" v-if="isActiveAddUser">
-			<UserAdd
-				@saveNewUser="saveNewUser"
-				:userEdit="userEdit"
-				@cancel="cancle"
-				@saveUser="saveUser"
-			></UserAdd>
-		</div>
 		<div class="user__dashboard__paging">
 			<a
 				><vue-fontawesome
@@ -132,10 +139,15 @@ export default {
 	data() {
 		return {
 			userSearch: "",
-			userEdit: null,
 			users: null,
-			Allusers: null,
+			user: {
+				userName: "",
+				name: "",
+				age: 0,
+				avatar: "",
+			},
 			isActiveAddUser: false,
+			isActiveEditUser: false,
 			isActiveDeleteUser: false,
 			pages: null,
 			userDelete: null,
@@ -157,43 +169,42 @@ export default {
 			return { "user__dashboard__table__item-background": indexUser % 2 === 1 };
 		},
 		activeAddUser() {
-			this.userEdit = null;
+			this.user.userName = "";
+			this.user.name = "";
+			this.user.age = 1;
+			this.user.avatar = "";
 			this.isActiveAddUser = true;
+			this.isActiveEditUser = false;
 		},
-		async saveNewUser(newUser) {
-			this.isActiveAddUser = false;
-			this.users.push({
-				id: this.users.length + 1,
-				userName: newUser.userName,
-				name: newUser.name,
-				age: newUser.age,
-				avatar: newUser.avatar,
-			});
-			await this.axios
-				.post("https://5fb6229236e2fa00166a4f32.mockapi.io/api/v1/users", {
-					userName: newUser.userName,
-					name: newUser.name,
-					age: newUser.age,
-					avatar: newUser.avatar,
-				})
-				.then(() => {
-					this.getAllUsers();
-				})
-				.catch((err) => console.log(err));
-		},
-		async saveUser(userEdit) {
-			this.isActiveAddUser = false;
-			await this.axios
-				.put(
-					"https://5fb6229236e2fa00166a4f32.mockapi.io/api/v1/users/" +
-						userEdit.id,
-					userEdit
-				)
-				.catch((err) => console.log(err));
+		async saveUser(user) {
+			if (this.isActiveAddUser && !this.isActiveEditUser) {
+				await this.axios
+					.post("https://5fb6229236e2fa00166a4f32.mockapi.io/api/v1/users", {
+						userName: user.userName,
+						name: user.name,
+						age: user.age,
+						avatar: user.avatar,
+					})
+					.then(() => {
+						this.getAllUsers();
+					})
+					.catch((err) => console.log(err));
+				this.isActiveAddUser = false;
+			} else if (!this.isActiveAddUser && this.isActiveEditUser) {
+				await this.axios
+					.put(
+						"https://5fb6229236e2fa00166a4f32.mockapi.io/api/v1/users/" +
+							user.id,
+						user
+					)
+					.catch((err) => console.log(err));
+			}
 		},
 		chooseDeleteUser(index) {
 			this.isActiveDeleteUser = true;
 			this.userDelete = this.users[index];
+			this.isActiveAddUser = false;
+			this.isActiveEditUser = false;
 		},
 		async deleteUser() {
 			this.isActiveDeleteUser = false;
@@ -214,10 +225,11 @@ export default {
 		},
 		chooseEditUser(index) {
 			this.userEdit = this.users[index];
-			this.isActiveAddUser = true;
+			this.isActiveEditUser = true;
 		},
 		cancle() {
 			this.isActiveAddUser = false;
+			this.isActiveEditUser = false;
 		},
 		searchUser() {
 			this.users = this.Allusers;
@@ -225,15 +237,18 @@ export default {
 				return user.name.search(this.userSearch) > -1;
 			});
 		},
-	},
-	computed: {
-		userName: function() {
-			return this.$store.state.userName;
+		setUserName() {
+			this.$store.dispatch("handleSaveUserName", localStorage.username);
 		},
 	},
-
+	computed: {
+		userName() {
+			return this.$store.getters.userName;
+		},
+	},
 	mounted() {
 		this.getAllUsers();
+		this.setUserName();
 	},
 };
 </script>
@@ -294,6 +309,7 @@ export default {
 	cursor: pointer;
 	background-color: rgba(191, 191, 191, 1);
 }
+
 .user__dashboard__table {
 	height: 100%;
 	border-radius: 10px;

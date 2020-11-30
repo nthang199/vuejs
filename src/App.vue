@@ -21,7 +21,16 @@ export default {
 			};
 		},
 	},
-	watch: {},
+	methods: {
+		chekcLogin() {
+			if (localStorage.username != "" || localStorage.username != null) {
+				this.$router.push("/user");
+			}
+		},
+	},
+	mounted() {
+		this.chekcLogin();
+	},
 };
 </script>
 

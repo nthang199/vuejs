@@ -21,11 +21,11 @@
 						placeholder="Password"
 					/>
 				</div>
-				<div id="login__notification">
+				<div id="login__notification" v-if="!isSuccess">
 					Tài khoản hoặc mật khẩu không đúng !
 				</div>
 				<div class="login__input__infor__button">
-					<a @click="login">Login</a>
+					<a @click="saveUserName">Login</a>
 				</div>
 			</div>
 		</div>
@@ -47,6 +47,7 @@ export default {
 				username: "",
 				password: "",
 			},
+			isSuccess: false,
 		};
 	},
 	validations: {
@@ -55,22 +56,25 @@ export default {
 		password: { required, minLength: minLength(10), maxLength: maxLength(11) },
 	},
 	methods: {
-		login() {
+		saveUserName() {
 			if (
 				this.account.username === "admin123" &&
 				this.account.password === "123456"
 			) {
 				this.$router.push("/user");
+				this.isSuccess = true;
 				localStorage.setItem("username", `${this.account.username}`);
 				localStorage.setItem("password", `${this.account.password}`);
-				this.$store.state.userName = this.account.username;
+				this.$store.dispatch("handleSaveUserName", localStorage.username);
 			} else {
 				this.account.username = "";
 				this.account.password = "";
-				document.getElementById("login__notification").style.visibility =
-					"visible";
+				this.isSuccess = false;
 			}
 		},
+	},
+	mounted() {
+		this.saveUserName();
 	},
 };
 </script>

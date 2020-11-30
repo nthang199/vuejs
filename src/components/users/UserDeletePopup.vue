@@ -1,6 +1,6 @@
 <template>
 	<div class="user__delete_popup">
-		<h3>Bạn có muốn chắc chắn xoá {{ userDelete.name }} ?</h3>
+		<h3><slot></slot></h3>
 		<div class="user__delete__popup__action">
 			<a @click="deleteUser">OK</a>
 			<a @click="cancelDeleteUser">Cancel</a>
@@ -17,7 +17,7 @@ export default {
 	},
 	methods: {
 		deleteUser() {
-			this.$emit("deleteUser");
+			this.$parent.deleteUser();
 		},
 		cancelDeleteUser() {
 			this.$emit("cancelDeleteUser");
@@ -56,5 +56,6 @@ export default {
 .user__delete__popup__action a:hover,
 .user__delete__popup__action a:active {
 	background-color: rgb(226, 226, 226);
+	cursor: pointer;
 }
 </style>

@@ -1,6 +1,8 @@
 <template>
 	<div class="user__add">
-		<h2 id="user__add__edit-title">Thêm mới User</h2>
+		<h2 id="user__add__edit-title">
+			<slot></slot>
+		</h2>
 		<div class="user__add__info">
 			<label>User name</label>
 			<input
@@ -8,28 +10,17 @@
 				name=""
 				id="userName"
 				placeholder="Username"
-				v-model="newUser.userName"
+				v-model="user.userName"
+				:disabled="!isActiveAddUser"
 			/>
 		</div>
 		<div class="user__add__info">
 			<label>Name</label>
-			<input
-				type="text"
-				name=""
-				id=""
-				placeholder="Name"
-				v-model="newUser.name"
-			/>
+			<input type="text" name="" id="" placeholder="Name" v-model="user.name" />
 		</div>
 		<div class="user__add__info">
 			<label>Age</label>
-			<input
-				type="text"
-				name=""
-				id=""
-				placeholder="Age"
-				v-model="newUser.age"
-			/>
+			<input type="text" name="" id="" placeholder="Age" v-model="user.age" />
 		</div>
 		<div class="user__add__info ">
 			<label>Avatar</label>
@@ -50,7 +41,7 @@
 			</div>
 		</div>
 		<div class="user__add__info__action">
-			<a @click="saveNewUser">Save</a>
+			<a @click="saveUser">Save</a>
 			<a @click="cancel">Cancel</a>
 		</div>
 	</div>
@@ -60,59 +51,33 @@
 export default {
 	name: "user-add",
 	props: {
-		userEdit: { type: Object, default: null },
+		user: { type: Object, default: null },
+		isActiveAddUser: Boolean,
 	},
 	data() {
-		return {
-			newUser: { userName: "", name: "", age: 2, avatar: "" },
-		};
+		return {};
 	},
 	methods: {
 		inputAvatar() {
 			this.$refs.avatarInput.click();
 		},
 		imageAvatar() {
-			this.newUser.avatar = this.$refs.avatarInput.files[0].name;
+			this.user.avatar = this.$refs.avatarInput.files[0].name;
 		},
-		saveNewUser() {
-			// if (
-			// 	this.newUser.userName != "" &&
-			// 	this.newUser.name != "" &&
-			// 	this.newUser.age > 0 &&
-			// 	this.newUser.avatar != ""
-			// ) {
-			// 	this.$emit("saveNewUser", this.newUser);
-			// }
-			if (this.userEdit != null) {
-				this.$emit("saveUser", this.newUser);
-			} else if (
-				this.newUser.userName != "" &&
-				this.newUser.name != "" &&
-				this.newUser.age > 0 &&
-				this.newUser.avatar != ""
+		saveUser() {
+			if (
+				this.user.userName != "" &&
+				this.user.name != "" &&
+				this.user.age > 0 &&
+				this.user.avatar != ""
 			) {
-				this.$emit("saveNewUser", this.newUser);
-			}
-		},
-		getUserEdit() {
-			if (this.userEdit != null) {
-				this.newUser = this.userEdit;
-				const title = document.getElementById("user__add__edit-title");
-				title.textContent = "Sửa thông tin người dùng";
-				const txtUserName = document.getElementById("userName");
-				txtUserName.setAttribute("disabled", "disabled");
-			} else {
-				const txtUserName = document.getElementById("userName");
-				txtUserName.removeAttribute("disabled");
+				this.$emit("saveUser", this.user);
 			}
 		},
 		cancel() {
 			this.$emit("cancel");
-			this.userEdit = null;
+			this.user = null;
 		},
-	},
-	mounted() {
-		this.getUserEdit();
 	},
 };
 </script>
@@ -122,6 +87,7 @@ export default {
 	background: linear-gradient(rgba(129, 207, 224, 1), rgba(52, 152, 219, 1));
 	padding: 20px;
 	border-radius: 10px;
+	width: 500px;
 }
 .user__add h2 {
 	margin: 15px auto;
@@ -137,7 +103,6 @@ export default {
 .user__add__info label {
 	width: 30%;
 	float: left;
-	padding: 0 20px 0 10px;
 	font-size: 20px;
 	color: #fff;
 	font-weight: 550;
