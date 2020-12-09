@@ -1,5 +1,5 @@
 <template>
-	<div class="user__dashboard">
+	<!--<div class="user__dashboard">
 		<div class="user__account">
 			<vue-fontawesome
 				icon="user"
@@ -123,19 +123,124 @@
 				></vue-fontawesome
 			></a>
 		</div>
-	</div>
+	</div>-->
+	<v-content>
+		<v-window class="mx-auto">
+			<v-card-text class="d-flex  align-center justify-end pr-12">
+				<v-avatar size="46" color="primary">
+					<v-icon size="36" color="white">mdi-account-tie</v-icon>
+				</v-avatar>
+				<p class="ma-0 mx-4 subtitle-1">{{ userName }}</p>
+			</v-card-text>
+			<v-card-title class="d-flex align-center justify-center">
+				<h1
+					class="font-weight-bold text-center text-uppercase display-1 blue--text text--darken-3 "
+				>
+					Danh sách người dùng
+				</h1>
+			</v-card-title>
+			<v-card-text>
+				<v-row class="px-16">
+					<v-col cols="6" class="d-flex align-center "
+						><v-text-field
+							name="search"
+							type="text"
+							v-model="userSearch"
+							placeholder="Search"
+							dense
+							height="45px"
+							class="body-1"
+							rounded
+							filled
+							color="#757575"
+							@input="searchUser()"
+							@change="searchUser()"
+						>
+						</v-text-field
+					></v-col>
+
+					<v-col cols="4"></v-col>
+					<v-col cols="2" class="d-flex align-start justify-end">
+						<Add :user="user" @saveUser="saveUser">Thêm mới người dùng</Add>
+					</v-col>
+				</v-row>
+				<v-simple-table class="table--bg mx-16  py-4" elevation="24">
+					<template>
+						<thead>
+							<tr>
+								<th
+									class="text-uppercase text-left grey--text text--darken-4 text-body-2 font-weight-bold"
+								>
+									Stt
+								</th>
+								<th
+									class="text-uppercase text-left grey--text text--darken-4 text-body-2 font-weight-bold"
+								>
+									user name
+								</th>
+								<th
+									class="text-uppercase text-left grey--text text--darken-4 text-body-2 font-weight-bold"
+								>
+									Name
+								</th>
+								<th
+									class="text-uppercase text-left grey--text text--darken-4 text-body-2 font-weight-bold"
+								>
+									age
+								</th>
+								<th
+									class="text-uppercase text-left grey--text text--darken-4 text-body-2 font-weight-bold"
+								>
+									avatar
+								</th>
+								<th
+									class="text-uppercase text-center grey--text text--darken-4 text-body-2 font-weight-bold"
+								>
+									action
+								</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr v-for="(user, index) in users" :key="index">
+								<td class="text-left text-subtitle-2">{{ index + 1 }}</td>
+								<td class="text-left text-subtitle-2">{{ user.userName }}</td>
+								<td class="text-left text-subtitle-2">{{ user.name }}</td>
+								<td class="text-left text-subtitle-2">{{ user.age }}</td>
+								<td class="text-left text-subtitle-2">{{ user.avatar }}</td>
+								<td class="d-flex align-center justify-sm-center">
+									<Add :user="user" @saveUser="saveUser"
+										>Sửa thông tin người dùng</Add
+									>
+									<Delete :user="user" @deleteUser="deleteUser"></Delete>
+								</td>
+							</tr>
+						</tbody>
+					</template>
+				</v-simple-table>
+			</v-card-text>
+			<template>
+				<div class="d-flex align-center justify-end px-16 py-6">
+					<v-pagination
+						v-model="page"
+						:length="15"
+						:total-visible="7"
+					></v-pagination>
+				</div>
+			</template>
+		</v-window>
+	</v-content>
 </template>
 
 <script>
 import Vue from "vue";
 import axios from "axios";
 import VueAxios from "vue-axios";
-import UserAdd from "./UserAdd";
-import UserDelete from "../../components/users/UserDeletePopup";
+import Add from "./Add";
+import Delete from "./Delete";
 Vue.use(VueAxios, axios);
 export default {
 	name: "user-dashboard",
-	components: { UserAdd, UserDelete },
+	components: { Add, Delete },
 	data() {
 		return {
 			userSearch: "",
@@ -143,13 +248,12 @@ export default {
 			user: {
 				userName: "",
 				name: "",
-				age: 0,
+				age: "",
 				avatar: "",
 			},
 			isActiveAddUser: false,
-			isActiveEditUser: false,
-			isActiveDeleteUser: false,
 			pages: null,
+			page: 1,
 			userDelete: null,
 		};
 	},
@@ -165,9 +269,7 @@ export default {
 			this.pages = Math.ceil(this.users.length / 9);
 			return this.users;
 		},
-		setBackGround(indexUser) {
-			return { "user__dashboard__table__item-background": indexUser % 2 === 1 };
-		},
+
 		activeAddUser() {
 			this.user.userName = "";
 			this.user.name = "";
@@ -176,42 +278,34 @@ export default {
 			this.isActiveAddUser = true;
 			this.isActiveEditUser = false;
 		},
-		async saveUser(user) {
-			if (this.isActiveAddUser && !this.isActiveEditUser) {
+		async saveUser(object) {
+			if (object.action) {
 				await this.axios
 					.post("https://5fb6229236e2fa00166a4f32.mockapi.io/api/v1/users", {
-						userName: user.userName,
-						name: user.name,
-						age: user.age,
-						avatar: user.avatar,
+						userName: object.user.userName,
+						name: object.user.name,
+						age: object.user.age,
+						avatar: object.user.avatar,
 					})
 					.then(() => {
 						this.getAllUsers();
 					})
 					.catch((err) => console.log(err));
-				this.isActiveAddUser = false;
-			} else if (!this.isActiveAddUser && this.isActiveEditUser) {
+			} else if (!object.action) {
 				await this.axios
 					.put(
 						"https://5fb6229236e2fa00166a4f32.mockapi.io/api/v1/users/" +
-							user.id,
-						user
+							object.user.id,
+						object.user
 					)
 					.catch((err) => console.log(err));
 			}
 		},
-		chooseDeleteUser(index) {
-			this.isActiveDeleteUser = true;
-			this.userDelete = this.users[index];
-			this.isActiveAddUser = false;
-			this.isActiveEditUser = false;
-		},
-		async deleteUser() {
+		async deleteUser(userId) {
 			this.isActiveDeleteUser = false;
 			await this.axios
 				.delete(
-					"https://5fb6229236e2fa00166a4f32.mockapi.io/api/v1/users/" +
-						this.userDelete.id
+					"https://5fb6229236e2fa00166a4f32.mockapi.io/api/v1/users/" + userId
 				)
 				.then(() => {
 					this.getAllUsers();
@@ -219,13 +313,6 @@ export default {
 				.catch((err) => {
 					console.log(err);
 				});
-		},
-		cancelDeleteUser() {
-			this.isActiveDeleteUser = false;
-		},
-		chooseEditUser(index) {
-			this.userEdit = this.users[index];
-			this.isActiveEditUser = true;
 		},
 		cancle() {
 			this.isActiveAddUser = false;
@@ -254,159 +341,9 @@ export default {
 </script>
 
 <style scoped>
-.user__dashboard {
-	margin: 1% 8%;
-}
-.user__account {
-	height: 50px;
-	text-align: right;
-	display: flex;
-	align-items: center;
-	justify-content: flex-end;
-}
-.user__account-username {
-	padding: 0 20px;
-	font-size: 16px;
-	font-weight: 450;
-}
-.user__dashboard__title {
-	margin: 20px 0;
-	text-transform: uppercase;
-	font-size: 20px;
-	color: rgba(46, 49, 49, 1);
-}
-.user__dashboard__action {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	position: relative;
-}
-.user__dashboard__action .search {
-	position: absolute;
-	left: 15px;
-}
-.user__dashboard__action input {
-	margin: 10px 5px;
-	width: 45%;
-	height: 25px;
-	border-radius: 8px;
-	border: 1px solid #ccc;
-	font-size: 18px;
-	padding: 7px 40px 7px;
-	color: #2d3436;
-}
-.user__dashboard__action-add {
-	text-decoration: none;
-	border: 1px solid #ccc;
-	padding: 10px 15px;
-	border-radius: 8px;
-	font-size: 18px;
-	font-weight: 500;
-	margin: 10px 5px;
-}
-.user__dashboard__action-add:hover,
-.user__dashboard__action-add:active {
-	cursor: pointer;
-	background-color: rgba(191, 191, 191, 1);
-}
-
-.user__dashboard__table {
-	height: 100%;
+.table--bg {
+	background-color: #e9e9e9 !important;
 	border-radius: 10px;
-}
-.user__dashboard__table table {
-	display: block;
-}
-.user__dashboard__table__header {
-	display: table;
-	width: 100%;
-	height: 50px;
-	font-size: 20px;
-	font-weight: 600;
-	background-color: rgba(232, 232, 232, 1);
-}
-.user__dashboard__table__item {
-	display: table;
-	width: 100%;
-	height: 40px;
-	font-size: 18px;
-	font-weight: 500;
-}
-.user__dashboard__table__item:hover {
-	background-color: rgba(191, 191, 191, 1);
-}
-.user__dashboard__table__header-stt {
-	width: 5%;
-}
-.user__dashboard__table__header-username {
-	width: 15%;
-}
-.user__dashboard__table__header-name {
-	width: 15%;
-}
-.user__dashboard__table__header-age {
-	width: 10%;
-}
-.user__dashboard__table__header-avatar {
-	width: 20%;
-}
-.user__dashboard__table__header-action {
-	width: 15%;
-}
-.user__dashboard__table__header-action a {
-	text-decoration: none;
-	padding: 2px 5px 2px 5px;
-	border-radius: 5px;
-	margin: 0 5px;
-}
-.user__dashboard__table__header-action a:hover,
-.user__dashboard__table__header-action a:active {
-	cursor: pointer;
-}
-.action-edit {
-	background-color: rgb(56, 178, 243);
-}
-.action-edit:hover {
-	background-color: rgb(48, 161, 221);
-}
-.action-delete {
-	background-color: rgb(247, 58, 58);
-}
-.action-delete:hover {
-	background-color: rgb(230, 36, 36);
-}
-.user__dashboard__table__item-background {
-	background-color: rgba(232, 232, 232, 1);
-}
-.user__dashboard__add {
-	position: absolute;
-	top: 20%;
-	left: 27.5%;
-	width: 45%;
-}
-.user__dashboard__delete {
-	position: absolute;
-	top: 30%;
-	left: 27.5%;
-	width: 45%;
-}
-.user__dashboard__paging {
-	display: flex;
-	align-items: center;
-	justify-content: flex-end;
-	position: absolute;
-	right: 10%;
-	bottom: 8%;
-}
-.user__dashboard__paging a {
-	margin: 20px 5px;
-	border: 1px solid rgb(47, 149, 204);
-	padding: 5px 10px;
-	border-radius: 3px;
-}
-.user__dashboard__paging a:hover,
-.user__dashboard__paging a:active {
-	cursor: pointer;
-	background: rgb(56, 178, 243);
+	box-shadow: 0px 3px 3px 3px #d1d1d1 !important;
 }
 </style>

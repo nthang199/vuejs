@@ -1,10 +1,7 @@
 <template>
-	<div id="app" :class="setBackGroundApp">
-		<router-link to="/"></router-link>
-		<router-link to="/user"></router-link>
-
+	<v-app>
 		<router-view></router-view>
-	</div>
+	</v-app>
 </template>
 
 <script>
@@ -13,6 +10,7 @@ export default {
 	data() {
 		return { isac: true };
 	},
+	components: {},
 	computed: {
 		setBackGroundApp() {
 			return {
@@ -22,14 +20,14 @@ export default {
 		},
 	},
 	methods: {
-		chekcLogin() {
+		checkLogin() {
 			if (localStorage.username != "" || localStorage.username != null) {
 				this.$router.push("/user");
 			}
 		},
 	},
 	mounted() {
-		this.chekcLogin();
+		this.checkLogin();
 	},
 };
 </script>
