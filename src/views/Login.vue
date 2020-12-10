@@ -27,19 +27,7 @@
 											class="text-left pl-8"
 											v-if="!$v.account.username.required"
 										>
-											Bạn chưa nhập user name !
-										</p>
-										<p
-											class="text-left pl-8"
-											v-if="!$v.account.username.minLength"
-										>
-											User name chưa đúng !
-										</p>
-										<p
-											class="text-left pl-8"
-											v-if="!$v.account.username.maxLength"
-										>
-											User name chưa đúng !
+											user name không được trống !
 										</p>
 										<v-text-field
 											v-model="$v.account.password.$model"
@@ -53,20 +41,16 @@
 											class="text-left pl-8"
 											v-if="!$v.account.password.required"
 										>
-											Bạn chưa nhập user name !
+											Bạn chưa nhập mật khẩu !
 										</p>
-										<p
-											class="text-left pl-8"
-											v-if="!$v.account.password.minLength"
+										<v-alert
+											dense
+											outlined
+											type="error"
+											v-if="isSuccess === false"
 										>
-											User name chưa đúng !
-										</p>
-										<p
-											class="text-left pl-8"
-											v-if="!$v.account.password.maxLength"
-										>
-											User name chưa đúng !
-										</p>
+											Đăng nhập thất bại !
+										</v-alert>
 										<v-btn
 											color="info"
 											large
@@ -106,7 +90,7 @@ export default {
 				username: "",
 				password: "",
 			},
-			isSuccess: false,
+			isSuccess: null,
 		};
 	},
 
@@ -117,9 +101,10 @@ export default {
 		saveUserName() {
 			this.$v.$touch();
 			if (this.$v.$pending || this.$v.$error) return;
+
 			if (
-				this.account.username === "admin123" &&
-				this.account.password === "123456"
+				this.account.username === "admin1234" &&
+				this.account.password === "1234567"
 			) {
 				this.$router.push("/user");
 				this.isSuccess = true;
@@ -132,9 +117,13 @@ export default {
 				this.isSuccess = false;
 			}
 		},
+		checkLogin() {
+			this.$emit("checkLogin");
+		},
 	},
 	mounted() {
 		this.saveUserName();
+		this.checkLogin();
 	},
 };
 </script>

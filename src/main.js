@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import App from './App.vue';
-import router from "./router";
+import { router } from "./router/index";
 import Vuelidate from "vuelidate";
 import { store } from './store/store';
 import vuetify from '@/plugins/vuetify';
@@ -12,6 +12,7 @@ Vue.component('VueFontawesome', require('vue-fontawesome-icon/VueFontawesome.vue
 Vue.use(Vuelidate);
 
 Vue.config.productionTip = false
+
 
 new Vue({
   render: h => h(App),

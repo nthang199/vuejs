@@ -1,34 +1,18 @@
 <template>
 	<v-row>
 		<v-row justify="center">
-			<v-dialog v-model="dialog" persistent max-width="600">
-				<template v-slot:activator="{ on, attrs }">
-					<v-btn
-						class=""
-						fab
-						dark
-						x-small
-						elevation="12"
-						color="#E53935"
-						v-bind="attrs"
-						v-on="on"
-					>
-						<v-icon dark>
-							mdi-delete
-						</v-icon>
-					</v-btn>
-				</template>
+			<v-dialog v-model="openDialogDelete" persistent max-width="600">
 				<v-card>
 					<v-card-title class="heading red--text text--darken-1 text-uppercase">
 						Delete user
 					</v-card-title>
 					<v-card-text class="text-body-2 grey--text text--darken-3"
-						>Bạn có chắc chắn muốn xoá người dùng {{ user.userName }} không
-						?</v-card-text
+						>Bạn có chắc chắn muốn xoá người dùng
+						<strong class="">{{ user.userName }}</strong> không ?</v-card-text
 					>
 					<v-card-actions>
 						<v-spacer></v-spacer>
-						<v-btn color="blue darken-3" text @click="dialog = false">
+						<v-btn color="blue darken-3" text @click="closeDialogDelete">
 							Cancel
 						</v-btn>
 						<v-btn color="blue darken-3" text @click="deleteUser">
@@ -46,16 +30,23 @@ export default {
 	name: "user-delete",
 	props: {
 		user: { type: Object, default: null },
+		isOpenDialogDelete: Boolean,
 	},
 	data() {
-		return {
-			dialog: false,
-		};
+		return {};
 	},
 	methods: {
 		deleteUser() {
+			this.closeDialogDelete();
 			this.$emit("deleteUser", this.user.id);
-			this.dialog = false;
+		},
+		closeDialogDelete() {
+			this.$emit("closeDialogDelete");
+		},
+	},
+	computed: {
+		openDialogDelete() {
+			return this.isOpenDialogDelete;
 		},
 	},
 };

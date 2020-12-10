@@ -1,134 +1,17 @@
 <template>
-	<!--<div class="user__dashboard">
-		<div class="user__account">
-			<vue-fontawesome
-				icon="user"
-				size="2.1"
-				color="rgba(46, 49, 49, 1)"
-			></vue-fontawesome>
-			<p class="user__account-username">{{ userName }}</p>
-		</div>
-		<div class="user__dashboard__title"><h2>Danh sách người dùng</h2></div>
-		<div class="user__dashboard__action">
-			<input
-				type="text"
-				name=""
-				id=""
-				placeholder="Search"
-				v-model="userSearch"
-				@input="searchUser()"
-				@change="searchUser()"
-			/>
-			<vue-fontawesome
-				icon="search"
-				size="1.5"
-				color="rgba(191, 191, 191, 1)"
-				class="search"
-			></vue-fontawesome>
-			<a class="user__dashboard__action-add" @click="activeAddUser"
-				>Thêm người dùng</a
-			>
-			<div class="user__dashboard__add" v-if="isActiveAddUser">
-				<UserAdd
-					:user="user"
-					@cancel="cancle"
-					@saveUser="saveUser"
-					:isActiveAddUser="isActiveAddUser"
-					>Thêm mới user</UserAdd
-				>
-			</div>
-		</div>
-		<div class="user__dashboard__table">
-			<table>
-				<thead class="user__dashboard__table__header">
-					<th class="user__dashboard__table__header-stt">STT</th>
-					<th class="user__dashboard__table__header-username">User Name</th>
-					<th class="user__dashboard__table__header-name">Name</th>
-					<th class="user__dashboard__table__header-age">Age</th>
-					<th class="user__dashboard__table__header-avatar">Avatar</th>
-					<th class="user__dashboard__table__header-action">Action</th>
-				</thead>
-				<tr
-					class="user__dashboard__table__item"
-					v-for="(user, index) in users"
-					:key="index"
-					:class="setBackGround(index)"
-				>
-					<td class="user__dashboard__table__header-stt">
-						{{ index + 1 }}
-					</td>
-					<td class="user__dashboard__table__header-username">
-						{{ user.userName }}
-					</td>
-					<td class="user__dashboard__table__header-name">
-						{{ user.name }}
-					</td>
-					<td class="user__dashboard__table__header-age">
-						{{ user.age }}
-					</td>
-					<td class="user__dashboard__table__header-avatar">
-						{{ user.avatar }}
-					</td>
-					<td class="user__dashboard__table__header-action">
-						<a class="action-edit" @click="chooseEditUser(index)"
-							><vue-fontawesome
-								icon="pencil"
-								size="1.3 "
-								color="#fff"
-							></vue-fontawesome
-						></a>
-						<div class="user__dashboard__add " v-if="isActiveEditUser">
-							<UserAdd :user="user" @cancel="cancle" @saveUser="saveUser"
-								>Sửa thông tin người dùng</UserAdd
-							>
-						</div>
-						<a class="action-delete" @click="chooseDeleteUser(index)"
-							><vue-fontawesome
-								icon="trash-o"
-								size="1.3"
-								color="#fff"
-							></vue-fontawesome
-						></a>
-						<div class="user__dashboard__delete" v-if="isActiveDeleteUser">
-							<UserDelete
-								:userDelete="userDelete"
-								@cancelDeleteUser="cancelDeleteUser"
-								>Bạn có chắc chắn muốn xoá người dùng
-								{{ user.userName }}</UserDelete
-							>
-						</div>
-					</td>
-				</tr>
-			</table>
-		</div>
-
-		<div class="user__dashboard__paging">
-			<a
-				><vue-fontawesome
-					icon="chevron-left"
-					size="1"
-					color="rgba(46, 49, 49, 1)"
-				></vue-fontawesome
-			></a>
-			<a>1</a>
-			<a>2</a>
-			<a>3</a>
-			<a>4</a>
-			<a>5</a>
-			<a
-				><vue-fontawesome
-					icon="chevron-right"
-					size="1"
-					color="rgba(46, 49, 49, 1)"
-				></vue-fontawesome
-			></a>
-		</div>
-	</div>-->
-	<v-content>
-		<v-window class="mx-auto">
+	<v-content
+		class="d-flex justify-center"
+		:class="[isLoading ? 'align-center' : 'align-start']"
+	>
+		<v-progress-circular
+			v-if="isLoading"
+			indeterminate
+			color="#4FC3F7"
+		></v-progress-circular>
+		<v-window class="mx-auto" v-if="!isLoading">
 			<v-card-text class="d-flex  align-center justify-end pr-12">
 				<v-avatar size="46" color="primary">
-					<v-icon size="36" color="white">mdi-account-tie</v-icon>
+					<v-icon size="36" color="white">mdi-account-tie </v-icon>
 				</v-avatar>
 				<p class="ma-0 mx-4 subtitle-1">{{ userName }}</p>
 			</v-card-text>
@@ -161,7 +44,26 @@
 
 					<v-col cols="4"></v-col>
 					<v-col cols="2" class="d-flex align-start justify-end">
-						<Add :user="user" @saveUser="saveUser">Thêm mới người dùng</Add>
+						<v-btn
+							class=""
+							dark
+							large
+							color="#1E88E5"
+							elevation="12"
+							@click="openDialogAdd"
+						>
+							<v-icon dark>
+								mdi-add
+							</v-icon>
+							Thêm mới
+						</v-btn>
+						<Add
+							:user="user"
+							:isOpenDialogAdd="isOpenDialogAdd"
+							:isActiveAddUser="isActiveAddUser"
+							@saveUser="saveUser"
+							@closeDialogAdd="closeDialogAdd"
+						></Add>
 					</v-col>
 				</v-row>
 				<v-simple-table class="table--bg mx-16  py-4" elevation="24">
@@ -194,7 +96,7 @@
 									avatar
 								</th>
 								<th
-									class="text-uppercase text-center grey--text text--darken-4 text-body-2 font-weight-bold"
+									class="text-uppercase text-center left grey--text text--darken-4 text-body-2 font-weight-bold"
 								>
 									action
 								</th>
@@ -207,14 +109,42 @@
 								<td class="text-left text-subtitle-2">{{ user.name }}</td>
 								<td class="text-left text-subtitle-2">{{ user.age }}</td>
 								<td class="text-left text-subtitle-2">{{ user.avatar }}</td>
-								<td class="d-flex align-center justify-sm-center">
-									<Add :user="user" @saveUser="saveUser"
-										>Sửa thông tin người dùng</Add
+								<td class="d-flex align-center justify-sm-space-around">
+									<v-btn
+										class=""
+										dark
+										fab
+										x-small
+										color="#1E88E5"
+										elevation="12"
+										@click="openDialogEdit(user)"
 									>
-									<Delete :user="user" @deleteUser="deleteUser"></Delete>
+										<v-icon dark>
+											mdi-pencil
+										</v-icon>
+									</v-btn>
+
+									<v-btn
+										dark
+										fab
+										x-small
+										color="#D32F2F"
+										elevation="12"
+										@click="openDialogDelete(user)"
+									>
+										<v-icon dark>
+											mdi-delete
+										</v-icon>
+									</v-btn>
 								</td>
 							</tr>
 						</tbody>
+						<Delete
+							:user="user"
+							:isOpenDialogDelete="isOpenDialogDelete"
+							@deleteUser="deleteUser"
+							@closeDialogDelete="closeDialogDelete"
+						></Delete>
 					</template>
 				</v-simple-table>
 			</v-card-text>
@@ -252,9 +182,12 @@ export default {
 				avatar: "",
 			},
 			isActiveAddUser: false,
+			isActiveDeleteUser: false,
+			isOpenDialogAdd: false,
+			isOpenDialogDelete: false,
 			pages: null,
 			page: 1,
-			userDelete: null,
+			isLoading: true,
 		};
 	},
 	methods: {
@@ -269,16 +202,38 @@ export default {
 			this.pages = Math.ceil(this.users.length / 9);
 			return this.users;
 		},
-
-		activeAddUser() {
-			this.user.userName = "";
-			this.user.name = "";
-			this.user.age = 1;
-			this.user.avatar = "";
+		closeDialogAdd() {
+			this.isOpenDialogAdd = false;
+			this.setUserProp();
+		},
+		closeDialogDelete() {
+			this.isOpenDialogDelete = false;
+			this.setUserProp();
+		},
+		openDialogAdd() {
+			this.isOpenDialogAdd = true;
 			this.isActiveAddUser = true;
-			this.isActiveEditUser = false;
+		},
+		openDialogEdit(user) {
+			this.isOpenDialogAdd = true;
+			this.isActiveAddUser = false;
+			this.user.id = user.id;
+			this.user.userName = user.userName;
+			this.user.name = user.name;
+			this.user.age = user.age;
+			this.user.avatar = user.avatar;
+		},
+		openDialogDelete(user) {
+			this.isOpenDialogDelete = true;
+			this.isActiveDeleteUser = true;
+			this.user.id = user.id;
+			this.user.userName = user.userName;
+			this.user.name = user.name;
+			this.user.age = user.age;
+			this.user.avatar = user.avatar;
 		},
 		async saveUser(object) {
+			this.closeDialogAdd();
 			if (object.action) {
 				await this.axios
 					.post("https://5fb6229236e2fa00166a4f32.mockapi.io/api/v1/users", {
@@ -300,9 +255,10 @@ export default {
 					)
 					.catch((err) => console.log(err));
 			}
+			this.setUserProp();
 		},
 		async deleteUser(userId) {
-			this.isActiveDeleteUser = false;
+			this.closeDialogDelete();
 			await this.axios
 				.delete(
 					"https://5fb6229236e2fa00166a4f32.mockapi.io/api/v1/users/" + userId
@@ -313,6 +269,7 @@ export default {
 				.catch((err) => {
 					console.log(err);
 				});
+			this.setUserProp();
 		},
 		cancle() {
 			this.isActiveAddUser = false;
@@ -326,6 +283,18 @@ export default {
 		},
 		setUserName() {
 			this.$store.dispatch("handleSaveUserName", localStorage.username);
+			this.$emit("checkLogin");
+		},
+		setUserProp() {
+			this.user.userName = "";
+			this.user.name = "";
+			this.user.age = "";
+			this.user.avatar = "";
+		},
+		closeLoading() {
+			setTimeout(() => {
+				this.isLoading = false;
+			}, 1000);
 		},
 	},
 	computed: {
@@ -336,6 +305,8 @@ export default {
 	mounted() {
 		this.getAllUsers();
 		this.setUserName();
+		this.setUserProp();
+		this.closeLoading();
 	},
 };
 </script>

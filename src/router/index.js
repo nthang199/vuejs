@@ -1,14 +1,15 @@
 import Vue from "vue";
 import Router from "vue-router";
+// import { store } from "../store/store.js";
 import List from "../views/users/List.vue"
 import Login from "../views/Login"
 Vue.use(Router);
 
-export default new Router({
+export const router = new Router({
   routes: [
     {
       path: "/user",
-      name: "User",
+      name: "List",
       component: List
     },
     {
@@ -18,3 +19,13 @@ export default new Router({
     },
   ]
 });
+// router.beforeEach((to, from, next) => {
+//   console.log(store.getters.userName);
+//   if (to.name !="Login")
+//   {
+//     next({ name: 'List' })
+//   }
+//   else {
+//     next()
+//   }
+// })

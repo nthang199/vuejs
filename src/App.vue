@@ -1,6 +1,6 @@
 <template>
 	<v-app>
-		<router-view></router-view>
+		<router-view @checkLogin="checkLogin"></router-view>
 	</v-app>
 </template>
 
@@ -11,18 +11,14 @@ export default {
 		return { isac: true };
 	},
 	components: {},
-	computed: {
-		setBackGroundApp() {
-			return {
-				app: this.$route.fullPath === "/",
-				app__dashboard: this.$route.fullPath != "/",
-			};
-		},
-	},
+	computed: {},
 	methods: {
 		checkLogin() {
-			if (localStorage.username != "" || localStorage.username != null) {
-				this.$router.push("/user");
+			console.log(this.$route);
+			if (localStorage.username === "" || localStorage.username === null) {
+				this.$router.replace("/");
+			} else {
+				this.$router.replace("/user");
 			}
 		},
 	},
