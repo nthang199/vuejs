@@ -3,19 +3,22 @@ import Vuex from 'vuex';
 Vue.use(Vuex);
 export const store = new Vuex.Store({
   state: {
-    userName: ""
+    user:{userName: "",
+    password:""}
   },getters: {
-    userName: state => {
-      return state.userName;
-    }
+    user: state => {
+      return state.user;
+    },
   }, mutations: {
-    saveUserName(state,userName) {
-      state.userName = userName;
-    }
+    saveUser(state,user) {
+      state.user.userName = user.userName;
+      state.user.password = user.password;
+    },
+    
     
   }, actions: {
-    handleSaveUserName(context, userName) {
-      context.commit('saveUserName', userName);
+    handleSaveUserName(context, user) {
+      context.commit('saveUser', user);
     }
   }
 })

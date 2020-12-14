@@ -15,7 +15,13 @@
 						<v-btn color="blue darken-3" text @click="closeDialogDelete">
 							Cancel
 						</v-btn>
-						<v-btn color="blue darken-3" text @click="deleteUser">
+						<v-btn
+							color="blue darken-3"
+							text
+							@click="deleteUser"
+							:loading="loadingDelete"
+							:disabled="loadingDelete"
+						>
 							Delete
 						</v-btn>
 					</v-card-actions>
@@ -33,12 +39,19 @@ export default {
 		isOpenDialogDelete: Boolean,
 	},
 	data() {
-		return {};
+		return {
+			loadingDelete: false,
+		};
 	},
 	methods: {
 		deleteUser() {
-			this.closeDialogDelete();
-			this.$emit("deleteUser", this.user.id);
+			this.loadingDelete = true;
+			setTimeout(() => {
+				this.loadingDelete = false;
+				this.$emit("closeDialogDelete");
+				this.closeDialogDelete();
+				this.$emit("deleteUser", this.user.id);
+			}, 1000);
 		},
 		closeDialogDelete() {
 			this.$emit("closeDialogDelete");

@@ -21,25 +21,54 @@
 								name="username"
 								type="text"
 								class="px-2"
-								v-model="user.userName"
+								v-model.trim="$v.user.userName.$model"
+								:class="{ 'is-invalid': validationStatus($v.user.userName) }"
+								@input="$v.user.userName.$touch()"
 								placeholder="User Name"
 							>
 							</v-text-field>
+							<p class="text-left pl-8" v-if="!$v.user.userName.required">
+								user name không được trống !
+							</p>
+							<p class="text-left pl-8" v-if="!$v.user.userName.minLength">
+								user phải có nhiều hơn
+								{{ $v.user.userName.$params.minLength.min }} kí tự!
+							</p>
+							<p class="text-left pl-8" v-if="!$v.user.userName.maxLength">
+								user phải có nhiều hơn
+								{{ $v.user.userName.$params.maxLength.max }} kí tự!
+							</p>
 							<v-text-field
 								name="name"
 								type="text"
 								class="px-2"
-								v-model="user.name"
+								v-model.trim="$v.user.name.$model"
+								:class="{ 'is-invalid': validationStatus($v.user.name) }"
 								placeholder="Name"
 							></v-text-field>
-
+							<p class="text-left pl-8" v-if="!$v.user.name.required">
+								name không được trống !
+							</p>
+							<p class="text-left pl-8" v-if="!$v.user.name.minLength">
+								phải có nhiều hơn
+								{{ $v.user.name.$params.minLength.min }} kí tự!
+							</p>
+							<p class="text-left pl-8" v-if="!$v.user.name.maxLength">
+								phải có nhiều hơn
+								{{ $v.user.name.$params.maxLength.max }} kí tự!
+							</p>
 							<v-text-field
 								name="age"
-								type="text"
+								type="number"
 								class="px-2"
-								v-model="user.age"
+								v-model.trim="$v.user.age.$model"
+								:class="{ 'is-invalid': validationStatus($v.user.age) }"
 								placeholder="Age"
 							>
+								<p class="text-left pl-8" v-if="!$v.user.age.between">
+									tuổi phải lơn hơn {{ $v.user.age.$params.between.min }} và nhỏ
+									hơn {{ $v.user.age.$params.between.max }} !
+								</p>
 							</v-text-field>
 
 							<div class="d-flex align-end justify-start px-2 pr-6 ">
@@ -54,17 +83,27 @@
 									filled
 									persistent-hint
 									prepend-icon="mdi-upload mdi-36px"
-									placeholder="Age"
 									@change="imageAvatar"
 								>
-								</v-file-input></div></v-form
-					></v-card-text>
+								</v-file-input>
+								<p class="text-left pl-8" v-if="!$v.user.avatar.required">
+									Hãy upload avatar !
+								</p>
+							</div></v-form
+						></v-card-text
+					>
 					<v-card-actions>
 						<v-spacer></v-spacer>
 						<v-btn color="blue darken-3 " text @click="closeDialogAdd">
 							Cancel
 						</v-btn>
-						<v-btn color="blue darken-3" text @click="saveUser">
+						<v-btn
+							color="blue darken-3"
+							:loading="loadingSave"
+							:disabled="loadingSave"
+							text
+							@click="saveUser"
+						>
 							Save
 						</v-btn>
 					</v-card-actions>
@@ -75,8 +114,26 @@
 </template>
 
 <script>
+import {
+	required,
+	minLength,
+	maxLength,
+	between,
+} from "vuelidate/lib/validators";
 export default {
 	name: "user-add",
+	validations: {
+		user: {
+			userName: { required, minLength: minLength(6), maxLength: maxLength(20) },
+			name: {
+				required,
+				minLength: minLength(5),
+				maxLength: maxLength(20),
+			},
+			avatar: { required },
+			age: { between: between(10, 100) },
+		},
+	},
 	props: {
 		user: { type: Object, default: null },
 		isOpenDialogAdd: Boolean,
@@ -85,29 +142,42 @@ export default {
 	data() {
 		return {
 			file: null,
-			dialog: false,
+			loadingSave: false,
 		};
 	},
 	methods: {
+		validationStatus(validation) {
+			return typeof validation != "undefined" ? validation.$error : false;
+		},
 		imageAvatar() {
-			console.log(this.file.name);
+			this.user.avatar = this.file.name;
 		},
 		saveUser() {
-			this.closeDialogAdd();
-			if (this.file != null) {
-				this.user.avatar = this.file.name;
-			}
-			if (
-				this.user.userName != "" &&
-				this.user.name != "" &&
-				this.user.age > 0 &&
-				this.user.avatar != ""
-			) {
-				this.$emit("saveUser", {
-					action: this.isActiveAddUser,
-					user: this.user,
-				});
-			}
+			// this.closeDialogAdd();
+			this.$v.$touch();
+			if (this.$v.user.$pending || this.$v.user.$error) return;
+			this.loadingSave = true;
+			setTimeout(() => {
+				this.loadingSave = false;
+				this.$emit("closeDialogAdd");
+				if (this.file != null) {
+					this.user.avatar = this.file.name;
+				}
+
+				if (
+					this.user.userName != "" &&
+					this.user.name != "" &&
+					this.user.age > 1 &&
+					this.user.avatar != ""
+				) {
+					this.$emit("saveUser", {
+						action: this.isActiveAddUser,
+						user: this.user,
+					});
+				} else {
+					console.log("err");
+				}
+			}, 1000);
 		},
 		closeDialogAdd() {
 			this.$emit("closeDialogAdd");
@@ -117,6 +187,9 @@ export default {
 		openDialogAdd() {
 			return this.isOpenDialogAdd;
 		},
+	},
+	mounted() {
+		// this.$v.user.$touch();
 	},
 };
 </script>

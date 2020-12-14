@@ -1,6 +1,6 @@
 <template>
 	<v-app>
-		<router-view @checkLogin="checkLogin"></router-view>
+		<router-view></router-view>
 	</v-app>
 </template>
 
@@ -13,17 +13,27 @@ export default {
 	components: {},
 	computed: {},
 	methods: {
-		checkLogin() {
-			console.log(this.$route);
-			if (localStorage.username === "" || localStorage.username === null) {
-				this.$router.replace("/");
-			} else {
-				this.$router.replace("/user");
-			}
+		// checkLogin() {
+		// 	console.log(localStorage.username);
+		// 	if (localStorage.username === "" || localStorage.username === null) {
+		// 		this.$router.replace("/");
+		// 	} else {
+		// 		this.$router.replace("/user");
+		// 	}
+		// },
+		setUser() {
+			// localStorage.setItem("username", "");
+			// localStorage.setItem("password", "");
+
+			this.$store.dispatch("handleSaveUserName", {
+				userName: localStorage.username,
+				password: localStorage.password,
+			});
 		},
 	},
 	mounted() {
-		this.checkLogin();
+		this.setUser();
+		// this.checkLogin();
 	},
 };
 </script>

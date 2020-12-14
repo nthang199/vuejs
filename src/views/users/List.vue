@@ -8,6 +8,14 @@
 			indeterminate
 			color="#4FC3F7"
 		></v-progress-circular>
+		<v-alert
+			class="alert-center text-center"
+			v-if="hideAlert"
+			:type="alert.type"
+			width="30%"
+			elevation="12"
+			>{{ alert.message }}</v-alert
+		>
 		<v-window class="mx-auto" v-if="!isLoading">
 			<v-card-text class="d-flex  align-center justify-end pr-12">
 				<v-avatar size="46" color="primary">
@@ -41,30 +49,29 @@
 						>
 						</v-text-field
 					></v-col>
-
-					<v-col cols="4"></v-col>
-					<v-col cols="2" class="d-flex align-start justify-end">
+					<!-- <v-col cols="5"></v-col> -->
+					<v-col cols="6" class="d-flex justify-end  align-start ">
 						<v-btn
 							class=""
 							dark
 							large
 							color="#1E88E5"
 							elevation="12"
-							@click="openDialogAdd"
+							@click="openDialogAdd(user)"
 						>
 							<v-icon dark>
 								mdi-add
 							</v-icon>
 							Thêm mới
 						</v-btn>
-						<Add
-							:user="user"
-							:isOpenDialogAdd="isOpenDialogAdd"
-							:isActiveAddUser="isActiveAddUser"
-							@saveUser="saveUser"
-							@closeDialogAdd="closeDialogAdd"
-						></Add>
 					</v-col>
+					<Add
+						:user="user"
+						:isOpenDialogAdd="isOpenDialogAdd"
+						:isActiveAddUser="isActiveAddUser"
+						@saveUser="saveUser"
+						@closeDialogAdd="closeDialogAdd"
+					></Add>
 				</v-row>
 				<v-simple-table class="table--bg mx-16  py-4" elevation="24">
 					<template>
@@ -178,8 +185,12 @@ export default {
 			user: {
 				userName: "",
 				name: "",
-				age: "",
+				age: 0,
 				avatar: "",
+			},
+			alert: {
+				type: "",
+				message: "",
 			},
 			isActiveAddUser: false,
 			isActiveDeleteUser: false,
@@ -196,19 +207,17 @@ export default {
 				.get("https://5fb6229236e2fa00166a4f32.mockapi.io/api/v1/users")
 				.then((result) => {
 					this.users = result.data;
-					this.Allusers = result.data;
 				})
 				.catch((err) => console.log(err));
 			this.pages = Math.ceil(this.users.length / 9);
+			// this.setUserProp();
 			return this.users;
 		},
 		closeDialogAdd() {
 			this.isOpenDialogAdd = false;
-			this.setUserProp();
 		},
 		closeDialogDelete() {
 			this.isOpenDialogDelete = false;
-			this.setUserProp();
 		},
 		openDialogAdd() {
 			this.isOpenDialogAdd = true;
@@ -243,9 +252,14 @@ export default {
 						avatar: object.user.avatar,
 					})
 					.then(() => {
+						this.alert.type = "success";
+						this.alert.message = "Lưu thành công !";
 						this.getAllUsers();
 					})
-					.catch((err) => console.log(err));
+					.catch(() => {
+						this.alert.type = "error";
+						this.alert.message = "Đã có lỗi xảy ra !";
+					});
 			} else if (!object.action) {
 				await this.axios
 					.put(
@@ -253,9 +267,17 @@ export default {
 							object.user.id,
 						object.user
 					)
-					.catch((err) => console.log(err));
+					.then(() => {
+						this.getAllUsers();
+						this.alert.type = "success";
+						this.alert.message = "Lưu thành công !";
+					})
+					.catch(() => {
+						this.alert.type = "error";
+						this.alert.message = "Đã có lỗi xảy ra !";
+					});
 			}
-			this.setUserProp();
+			this.setAlert();
 		},
 		async deleteUser(userId) {
 			this.closeDialogDelete();
@@ -265,11 +287,15 @@ export default {
 				)
 				.then(() => {
 					this.getAllUsers();
+					this.alert.type = "success";
+					this.alert.message = "Xoá thành công !";
 				})
-				.catch((err) => {
-					console.log(err);
+				.catch(() => {
+					this.alert.type = "error";
+					this.alert.message = "Đã có lỗi xảy ra !";
 				});
 			this.setUserProp();
+			this.setAlert();
 		},
 		cancle() {
 			this.isActiveAddUser = false;
@@ -282,11 +308,14 @@ export default {
 			});
 		},
 		setUserName() {
-			this.$store.dispatch("handleSaveUserName", localStorage.username);
-			this.$emit("checkLogin");
+			this.$store.dispatch("handleSaveUserName", {
+				userName: localStorage.username,
+				password: localStorage.password,
+			});
+			// this.$emit("checkLogin");
 		},
 		setUserProp() {
-			this.user.userName = "";
+			this.user.userName = null;
 			this.user.name = "";
 			this.user.age = "";
 			this.user.avatar = "";
@@ -296,10 +325,28 @@ export default {
 				this.isLoading = false;
 			}, 1000);
 		},
+		setAlert() {
+			setTimeout(() => {
+				this.alert.type = "";
+				this.alert.message = "";
+			}, 1000);
+		},
 	},
 	computed: {
 		userName() {
-			return this.$store.getters.userName;
+			let user = this.$store.getters.user;
+			// let user = {
+			// 	userName: localStorage.username,
+			// 	password: localStorage.password,
+			// };
+			return user.userName;
+		},
+		hideAlert() {
+			if (this.alert.type != "" && !this.isLoading) {
+				return true;
+			} else {
+				return false;
+			}
 		},
 	},
 	mounted() {
@@ -316,5 +363,13 @@ export default {
 	background-color: #e9e9e9 !important;
 	border-radius: 10px;
 	box-shadow: 0px 3px 3px 3px #d1d1d1 !important;
+}
+.alert-center {
+	position: fixed;
+	z-index: 1000;
+	left: 50%;
+	top: 50%;
+	-webkit-transform: translate(-50%, -50%);
+	transform: translate(-50%, -50%);
 }
 </style>

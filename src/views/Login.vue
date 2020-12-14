@@ -15,38 +15,28 @@
 									</h1>
 									<v-form class="pa-6 pb-12">
 										<v-text-field
-											v-model="$v.account.username.$model"
+											v-model.trim="$v.account.username.$model"
 											name="username"
 											type="text"
 											class="pa-2"
+											:errorMessages="errorMessages.user"
 											placeholder="User Name"
 											prepend-icon="mdi-account-circle"
 										>
 										</v-text-field>
-										<p
-											class="text-left pl-8"
-											v-if="!$v.account.username.required"
-										>
-											user name không được trống !
-										</p>
+
 										<v-text-field
-											v-model="$v.account.password.$model"
+											v-model.trim="$v.account.password.$model"
 											name="username"
 											type="password"
 											class="pa-2"
+											:errorMessages="errorMessages.pass"
 											placeholder="Password"
 											prepend-icon="mdi-shield-key"
 										></v-text-field>
-										<p
-											class="text-left pl-8"
-											v-if="!$v.account.password.required"
-										>
-											Bạn chưa nhập mật khẩu !
-										</p>
 										<v-alert
-											dense
-											outlined
 											type="error"
+											class="alert-center"
 											v-if="isSuccess === false"
 										>
 											Đăng nhập thất bại !
@@ -56,7 +46,7 @@
 											large
 											class="text-uppercase text-button my-4 font-weight-bold"
 											text-size="30px"
-											@click="saveUserName"
+											@click="saveUser"
 											>đăng nhập</v-btn
 										>
 									</v-form>
@@ -71,61 +61,88 @@
 </template>
 
 <script>
-import { required, minLength, maxLength } from "vuelidate/lib/validators";
+import { required } from "vuelidate/lib/validators";
 export default {
 	name: "login",
-	validations: {
-		account: {
-			username: { required, minLength: minLength(8), maxLength: maxLength(20) },
-			password: {
-				required,
-				minLength: minLength(6),
-				maxLength: maxLength(11),
-			},
-		},
-	},
+
 	data() {
 		return {
 			account: {
-				username: "",
-				password: "",
+				username: null,
+				password: null,
 			},
 			isSuccess: null,
 		};
 	},
-
+	validations: {
+		account: {
+			username: { required },
+			password: {
+				required,
+			},
+		},
+	},
+	computed: {
+		errorMessages() {
+			let errMess = {
+				user: "",
+				pass: "",
+			};
+			if (
+				this.$v.account.username.$dirty &&
+				!this.$v.account.username.required
+			) {
+				errMess.user = "Bạn chưa nhập user name !";
+			}
+			if (
+				this.$v.account.password.$dirty &&
+				!this.$v.account.password.required
+			) {
+				errMess.pass = "Bạn chưa nhập pass !";
+			}
+			return errMess;
+		},
+	},
 	methods: {
 		validationStatus(validation) {
 			return typeof validation != "undefined" ? validation.$error : false;
 		},
-		saveUserName() {
-			this.$v.$touch();
-			if (this.$v.$pending || this.$v.$error) return;
 
+		saveUser() {
+			this.$v.account.$dirty();
+			if (this.$v.account.$pending || this.$v.account.$error) return;
 			if (
 				this.account.username === "admin1234" &&
 				this.account.password === "1234567"
 			) {
-				this.$router.push("/user");
 				this.isSuccess = true;
 				localStorage.setItem("username", `${this.account.username}`);
 				localStorage.setItem("password", `${this.account.password}`);
-				this.$store.dispatch("handleSaveUserName", localStorage.username);
+				this.$router.push("/user");
+				this.$store.dispatch("handleSaveUserName", {
+					userName: localStorage.username,
+					password: localStorage.password,
+				});
 			} else {
 				this.account.username = "";
 				this.account.password = "";
 				this.isSuccess = false;
 			}
 		},
-		checkLogin() {
-			this.$emit("checkLogin");
-		},
 	},
 	mounted() {
-		this.saveUserName();
-		this.checkLogin();
+		this.saveUser();
 	},
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.alert-center {
+	position: fixed;
+	z-index: 1000;
+	left: 50%;
+	top: 50%;
+	-webkit-transform: translate(-50%, -50%);
+	transform: translate(-50%, -50%);
+}
+</style>

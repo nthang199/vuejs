@@ -15,17 +15,24 @@ export const router = new Router({
     {
       path: "/",
       name: "Login",
-      component: Login
+      component: Login,
+      beforeEnter: (to, from, next) => {
+        let user = {userName:localStorage.username,password:localStorage.password};
+        //let user = store.getters.user;
+     
+        console.log(user);
+        if ( (user.userName!="" && user.password!="")){
+    next({name:"List"})
+  }else {next()}
+      }
     },
   ]
 });
-// router.beforeEach((to, from, next) => {
-//   console.log(store.getters.userName);
-//   if (to.name !="Login")
-//   {
-//     next({ name: 'List' })
-//   }
-//   else {
-//     next()
-//   }
-// })
+router.beforeEach(( to,from,next) => {
+  let user = { userName: localStorage.username, password: localStorage.password };
+ // let user = store.getters.user;
+  console.log(user);
+  if (to.name !="Login" && (user.userName==="" || user.password==="")){
+    next({name:"Login"})
+  }else {next()}
+})
