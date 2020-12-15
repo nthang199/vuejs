@@ -9,36 +9,34 @@
 							<v-col cols="6" sm="6" md="6">
 								<v-card class="rounded-xl" elevation="12">
 									<h1
-										class="font-weight-bold text-center text-uppercase display-1 blue--text text--darken-3 pa-6 pt-12"
+										class="font-weight-bold text-center text-uppercase text-md-display-1 text-body-1 blue--text text--darken-3 pa-6 pt-12"
 									>
 										Sign in
 									</h1>
 									<v-form class="pa-6 pb-12">
 										<v-text-field
-											v-model.trim="$v.account.username.$model"
+											v-model="account.username"
+											@input="$v.account.username.$touch()"
 											name="username"
 											type="text"
 											class="pa-2"
-											:errorMessages="errorMessages.user"
+											:errorMessages="userNameError"
 											placeholder="User Name"
 											prepend-icon="mdi-account-circle"
 										>
 										</v-text-field>
 
 										<v-text-field
-											v-model.trim="$v.account.password.$model"
+											v-model="account.password"
+											@input="$v.account.password.$touch()"
 											name="username"
 											type="password"
 											class="pa-2"
-											:errorMessages="errorMessages.pass"
+											:errorMessages="passwordError"
 											placeholder="Password"
 											prepend-icon="mdi-shield-key"
 										></v-text-field>
-										<v-alert
-											type="error"
-											class="alert-center"
-											v-if="isSuccess === false"
-										>
+										<v-alert type="error" class="alert-center" v-if="false">
 											Đăng nhập thất bại !
 										</v-alert>
 										<v-btn
@@ -83,24 +81,23 @@ export default {
 		},
 	},
 	computed: {
-		errorMessages() {
-			let errMess = {
-				user: "",
-				pass: "",
-			};
-			if (
-				this.$v.account.username.$dirty &&
-				!this.$v.account.username.required
-			) {
-				errMess.user = "Bạn chưa nhập user name !";
+		userNameError() {
+			let errors = [];
+			if (!this.$v.account.username.$dirty) {
+				return errors;
 			}
-			if (
-				this.$v.account.password.$dirty &&
-				!this.$v.account.password.required
-			) {
-				errMess.pass = "Bạn chưa nhập pass !";
+			!this.$v.account.username.required &&
+				errors.push("UserName không được bỏ trống !");
+			return errors;
+		},
+		passwordError() {
+			let errors = [];
+			if (!this.$v.account.password.$dirty) {
+				return errors;
 			}
-			return errMess;
+			!this.$v.account.password.required &&
+				errors.push("Password không được bỏ trống !");
+			return errors;
 		},
 	},
 	methods: {
@@ -109,7 +106,7 @@ export default {
 		},
 
 		saveUser() {
-			this.$v.account.$dirty();
+			// this.$v.account.$dirty();
 			if (this.$v.account.$pending || this.$v.account.$error) return;
 			if (
 				this.account.username === "admin1234" &&

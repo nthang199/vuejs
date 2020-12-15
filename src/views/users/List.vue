@@ -25,14 +25,14 @@
 			</v-card-text>
 			<v-card-title class="d-flex align-center justify-center">
 				<h1
-					class="font-weight-bold text-center text-uppercase display-1 blue--text text--darken-3 "
+					class="font-weight-bold text-center text-uppercase  text-h6 text-sm-h5 text-md-h4 blue--text text--darken-3 "
 				>
 					Danh sách người dùng
 				</h1>
 			</v-card-title>
 			<v-card-text>
 				<v-row class="px-16">
-					<v-col cols="6" class="d-flex align-center "
+					<v-col class="d-flex align-center" cols="12" sm="6" md="6"
 						><v-text-field
 							name="search"
 							type="text"
@@ -44,15 +44,17 @@
 							rounded
 							filled
 							color="#757575"
-							@input="searchUser()"
-							@change="searchUser()"
 						>
 						</v-text-field
 					></v-col>
-					<!-- <v-col cols="5"></v-col> -->
-					<v-col cols="6" class="d-flex justify-end  align-start ">
+					<v-col
+						class="d-flex justify-end  align-start "
+						cols="12"
+						sm="6"
+						md="6"
+					>
 						<v-btn
-							class=""
+							class="sm-fab"
 							dark
 							large
 							color="#1E88E5"
@@ -60,12 +62,13 @@
 							@click="openDialogAdd(user)"
 						>
 							<v-icon dark>
-								mdi-add
+								mdi-plus
 							</v-icon>
 							Thêm mới
 						</v-btn>
 					</v-col>
 					<Add
+						v-if="isOpenDialogAdd"
 						:user="user"
 						:isOpenDialogAdd="isOpenDialogAdd"
 						:isActiveAddUser="isActiveAddUser"
@@ -147,6 +150,7 @@
 							</tr>
 						</tbody>
 						<Delete
+							v-if="isOpenDialogDelete"
 							:user="user"
 							:isOpenDialogDelete="isOpenDialogDelete"
 							@deleteUser="deleteUser"
@@ -155,15 +159,19 @@
 					</template>
 				</v-simple-table>
 			</v-card-text>
-			<template>
-				<div class="d-flex align-center justify-end px-16 py-6">
-					<v-pagination
-						v-model="page"
-						:length="15"
-						:total-visible="7"
-					></v-pagination>
-				</div>
-			</template>
+			<v-row>
+				<v-col md="6" sm="12" xs="12" offset-md="6">
+					<template>
+						<div class="d-flex align-center justify-end px-16 py-6">
+							<v-pagination
+								v-model="page"
+								:length="5"
+								:total-visible="7"
+							></v-pagination>
+						</div>
+					</template>
+				</v-col>
+			</v-row>
 		</v-window>
 	</v-content>
 </template>
@@ -183,10 +191,10 @@ export default {
 			userSearch: "",
 			users: null,
 			user: {
-				userName: "",
-				name: "",
+				userName: null,
+				name: null,
 				age: 0,
-				avatar: "",
+				avatar: null,
 			},
 			alert: {
 				type: "",
@@ -210,7 +218,7 @@ export default {
 				})
 				.catch((err) => console.log(err));
 			this.pages = Math.ceil(this.users.length / 9);
-			// this.setUserProp();
+			this.setUserProp();
 			return this.users;
 		},
 		closeDialogAdd() {
@@ -268,9 +276,9 @@ export default {
 						object.user
 					)
 					.then(() => {
-						this.getAllUsers();
 						this.alert.type = "success";
 						this.alert.message = "Lưu thành công !";
+						this.getAllUsers();
 					})
 					.catch(() => {
 						this.alert.type = "error";
@@ -278,6 +286,7 @@ export default {
 					});
 			}
 			this.setAlert();
+			this.setUserProp();
 		},
 		async deleteUser(userId) {
 			this.closeDialogDelete();
@@ -301,44 +310,41 @@ export default {
 			this.isActiveAddUser = false;
 			this.isActiveEditUser = false;
 		},
-		searchUser() {
-			this.users = this.Allusers;
-			this.users = this.users.filter((user) => {
-				return user.name.search(this.userSearch) > -1;
-			});
+
+		swapUser(user1, user2) {
+			let userTemplate;
+			userTemplate = user1;
+			user1 = user2;
+			user2 = userTemplate;
 		},
 		setUserName() {
 			this.$store.dispatch("handleSaveUserName", {
 				userName: localStorage.username,
 				password: localStorage.password,
 			});
-			// this.$emit("checkLogin");
 		},
 		setUserProp() {
 			this.user.userName = null;
-			this.user.name = "";
-			this.user.age = "";
-			this.user.avatar = "";
+			this.user.name = null;
+			this.user.age = 0;
+			this.user.avatar = null;
 		},
 		closeLoading() {
 			setTimeout(() => {
 				this.isLoading = false;
-			}, 1000);
+			}, 500);
 		},
 		setAlert() {
 			setTimeout(() => {
 				this.alert.type = "";
 				this.alert.message = "";
-			}, 1000);
+			}, 500);
 		},
 	},
 	computed: {
 		userName() {
 			let user = this.$store.getters.user;
-			// let user = {
-			// 	userName: localStorage.username,
-			// 	password: localStorage.password,
-			// };
+
 			return user.userName;
 		},
 		hideAlert() {
@@ -348,12 +354,33 @@ export default {
 				return false;
 			}
 		},
+		size() {
+			const size = { xs: "x-small", sm: "small", lg: "large", xl: "x-large" }[
+				this.$vuetify.breakpoint.name
+			];
+			return size ? { [size]: true } : {};
+		},
 	},
 	mounted() {
 		this.getAllUsers();
 		this.setUserName();
 		this.setUserProp();
 		this.closeLoading();
+	},
+	watch: {
+		userSearch: {
+			deep: true,
+
+			handler() {
+				if (this.userSearch != "") {
+					this.users = this.users.filter((user) => {
+						return user.name.search(this.userSearch) > -1;
+					});
+				} else {
+					this.getAllUsers();
+				}
+			},
+		},
 	},
 };
 </script>

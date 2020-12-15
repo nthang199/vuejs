@@ -5,12 +5,12 @@
 				<v-card>
 					<h1
 						v-if="isActiveAddUser"
-						class="headline font-weight-bold text-center text-uppercase display-1 blue--text text--darken-3 pb-4 pt-8"
+						class="headline font-weight-bold text-center text-uppercase text-h6 text-sm-h5 text-md-h4 blue--text text--darken-3 pb-4 pt-8"
 					>
 						Thêm user
 					</h1>
 					<h1
-						class="headline font-weight-bold text-center text-uppercase display-1 blue--text text--darken-3 pb-4 pt-8"
+						class="headline font-weight-bold text-center text-uppercase text-h6 text-sm-h5 text-md-h4 blue--text text--darken-3 pb-4 pt-8"
 						v-else
 					>
 						Sửa thông tin
@@ -21,77 +21,43 @@
 								name="username"
 								type="text"
 								class="px-2"
-								v-model.trim="$v.user.userName.$model"
-								:class="{ 'is-invalid': validationStatus($v.user.userName) }"
 								@input="$v.user.userName.$touch()"
-								placeholder="User Name"
+								v-model="user.userName"
+								:errorMessages="userNameError"
+								placeholder="userName"
 							>
 							</v-text-field>
-							<p class="text-left pl-8" v-if="!$v.user.userName.required">
-								user name không được trống !
-							</p>
-							<p class="text-left pl-8" v-if="!$v.user.userName.minLength">
-								user phải có nhiều hơn
-								{{ $v.user.userName.$params.minLength.min }} kí tự!
-							</p>
-							<p class="text-left pl-8" v-if="!$v.user.userName.maxLength">
-								user phải có nhiều hơn
-								{{ $v.user.userName.$params.maxLength.max }} kí tự!
-							</p>
 							<v-text-field
 								name="name"
 								type="text"
 								class="px-2"
-								v-model.trim="$v.user.name.$model"
-								:class="{ 'is-invalid': validationStatus($v.user.name) }"
+								@input="$v.user.name.$touch()"
+								v-model="user.name"
+								:errorMessages="nameError"
 								placeholder="Name"
 							></v-text-field>
-							<p class="text-left pl-8" v-if="!$v.user.name.required">
-								name không được trống !
-							</p>
-							<p class="text-left pl-8" v-if="!$v.user.name.minLength">
-								phải có nhiều hơn
-								{{ $v.user.name.$params.minLength.min }} kí tự!
-							</p>
-							<p class="text-left pl-8" v-if="!$v.user.name.maxLength">
-								phải có nhiều hơn
-								{{ $v.user.name.$params.maxLength.max }} kí tự!
-							</p>
 							<v-text-field
 								name="age"
 								type="number"
 								class="px-2"
-								v-model.trim="$v.user.age.$model"
-								:class="{ 'is-invalid': validationStatus($v.user.age) }"
+								@input="$v.user.age.$touch()"
+								v-model.trim="user.age"
+								:errorMessages="ageError"
 								placeholder="Age"
 							>
-								<p class="text-left pl-8" v-if="!$v.user.age.between">
-									tuổi phải lơn hơn {{ $v.user.age.$params.between.min }} và nhỏ
-									hơn {{ $v.user.age.$params.between.max }} !
-								</p>
 							</v-text-field>
-
 							<div class="d-flex align-end justify-start px-2 pr-6 ">
-								<span
-									class="red--text text--darken-1 rounded-pill mr-12"
-									style="border:1px solid gray;"
-									><v-icon>mdi-account mdi-36px</v-icon></span
-								>
 								<v-file-input
-									hide-input
 									v-model="file"
 									filled
+									accept="image/png, image/jpeg, image/bmp"
+									placeholder="Avatar"
 									persistent-hint
 									prepend-icon="mdi-upload mdi-36px"
 									@change="imageAvatar"
 								>
-								</v-file-input>
-								<p class="text-left pl-8" v-if="!$v.user.avatar.required">
-									Hãy upload avatar !
-								</p>
-							</div></v-form
-						></v-card-text
-					>
+								</v-file-input></div></v-form
+					></v-card-text>
 					<v-card-actions>
 						<v-spacer></v-spacer>
 						<v-btn color="blue darken-3 " text @click="closeDialogAdd">
@@ -124,13 +90,12 @@ export default {
 	name: "user-add",
 	validations: {
 		user: {
-			userName: { required, minLength: minLength(6), maxLength: maxLength(20) },
 			name: {
 				required,
 				minLength: minLength(5),
-				maxLength: maxLength(20),
+				maxLength: maxLength(10),
 			},
-			avatar: { required },
+			userName: { required, minLength: minLength(6), maxLength: maxLength(10) },
 			age: { between: between(10, 100) },
 		},
 	},
@@ -153,21 +118,15 @@ export default {
 			this.user.avatar = this.file.name;
 		},
 		saveUser() {
-			// this.closeDialogAdd();
-			this.$v.$touch();
 			if (this.$v.user.$pending || this.$v.user.$error) return;
 			this.loadingSave = true;
 			setTimeout(() => {
 				this.loadingSave = false;
 				this.$emit("closeDialogAdd");
-				if (this.file != null) {
-					this.user.avatar = this.file.name;
-				}
-
 				if (
 					this.user.userName != "" &&
 					this.user.name != "" &&
-					this.user.age > 1 &&
+					this.user.age > 9 &&
 					this.user.avatar != ""
 				) {
 					this.$emit("saveUser", {
@@ -177,7 +136,8 @@ export default {
 				} else {
 					console.log("err");
 				}
-			}, 1000);
+			}, 500);
+			this.file = null;
 		},
 		closeDialogAdd() {
 			this.$emit("closeDialogAdd");
@@ -187,10 +147,64 @@ export default {
 		openDialogAdd() {
 			return this.isOpenDialogAdd;
 		},
+		userNameError() {
+			let errors = [];
+			if (!this.$v.user.userName.$dirty) {
+				return errors;
+			}
+			!this.$v.user.userName.required &&
+				errors.push("UserName không được bỏ trống !");
+			!this.$v.user.userName.maxLength &&
+				errors.push(
+					`UserName phải nhỏ hơn ` +
+						this.$v.user.userName.$params.maxLength.max +
+						` kí tự`
+				);
+			!this.$v.user.userName.minLength &&
+				errors.push(
+					`UserName phải lớn hơn ` +
+						this.$v.user.userName.$params.minLength.min +
+						` kí tự`
+				);
+			return errors;
+		},
+		nameError() {
+			let errors = [];
+			if (!this.$v.user.name.$dirty) {
+				return errors;
+			}
+			!this.$v.user.name.required && errors.push("Name không được bỏ trống !");
+			!this.$v.user.name.maxLength &&
+				errors.push(
+					`Name phải nhỏ hơn ` +
+						this.$v.user.name.$params.maxLength.max +
+						` kí tự`
+				);
+			!this.$v.user.name.minLength &&
+				errors.push(
+					`Name phải lớn hơn ` +
+						this.$v.user.name.$params.minLength.min +
+						` kí tự`
+				);
+			return errors;
+		},
+		ageError() {
+			let errors = [];
+			if (!this.$v.user.age.$dirty) {
+				return errors;
+			}
+			!this.$v.user.age.between &&
+				errors.push(
+					`Tuổi phải từ  ` +
+						this.$v.user.age.$params.between.min +
+						` đến ` +
+						this.$v.user.age.$params.between.max +
+						` !`
+				);
+			return errors;
+		},
 	},
-	mounted() {
-		// this.$v.user.$touch();
-	},
+	mounted() {},
 };
 </script>
 

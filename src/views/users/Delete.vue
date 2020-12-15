@@ -51,7 +51,7 @@ export default {
 				this.$emit("closeDialogDelete");
 				this.closeDialogDelete();
 				this.$emit("deleteUser", this.user.id);
-			}, 1000);
+			}, 500);
 		},
 		closeDialogDelete() {
 			this.$emit("closeDialogDelete");
