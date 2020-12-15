@@ -9,7 +9,7 @@
 							<v-col cols="6" sm="6" md="6">
 								<v-card class="rounded-xl" elevation="12">
 									<h1
-										class="font-weight-bold text-center text-uppercase text-md-display-1 text-body-1 blue--text text--darken-3 pa-6 pt-12"
+										class="font-weight-bold text-center text-uppercase text-h6 text-sm-h5 text-md-h4 blue--text text--darken-3 pa-6 pt-12"
 									>
 										Sign in
 									</h1>
@@ -41,11 +41,14 @@
 										</v-alert>
 										<v-btn
 											color="info"
-											large
-											class="text-uppercase text-button my-4 font-weight-bold"
-											text-size="30px"
+											class="pa-4 pa-md-3 pa-sm-4 "
+											v-bind="size"
 											@click="saveUser"
-											>đăng nhập</v-btn
+											><p
+												class="text-uppercase font-weight-bold text-center pt-4 text-sm-subtitle-1 text-md-h6 text-caption"
+											>
+												đăng nhập
+											</p></v-btn
 										>
 									</v-form>
 								</v-card>
@@ -81,6 +84,12 @@ export default {
 		},
 	},
 	computed: {
+		size() {
+			const size = { xs: "x-small", sm: "small", lg: "large", xl: "x-large" }[
+				this.$vuetify.breakpoint.name
+			];
+			return size ? { [size]: true } : {};
+		},
 		userNameError() {
 			let errors = [];
 			if (!this.$v.account.username.$dirty) {
@@ -127,6 +136,7 @@ export default {
 			}
 		},
 	},
+
 	mounted() {
 		this.saveUser();
 	},

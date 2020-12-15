@@ -17,7 +17,7 @@
 			>{{ alert.message }}</v-alert
 		>
 		<v-window class="mx-auto" v-if="!isLoading">
-			<v-card-text class="d-flex  align-center justify-end pr-12">
+			<v-card-text class="d-flex  align-center justify-end pr-md-12">
 				<v-avatar size="46" color="primary">
 					<v-icon size="36" color="white">mdi-account-tie </v-icon>
 				</v-avatar>
@@ -54,14 +54,14 @@
 						md="6"
 					>
 						<v-btn
-							class="sm-fab"
+							class="pa-4 pa-md-2 pa-sm-4 font-weight-bold"
 							dark
-							large
+							v-bind="size"
 							color="#1E88E5"
 							elevation="12"
 							@click="openDialogAdd(user)"
 						>
-							<v-icon dark>
+							<v-icon dark v-bind="size">
 								mdi-plus
 							</v-icon>
 							Thêm mới

@@ -18,9 +18,6 @@ export const router = new Router({
       component: Login,
       beforeEnter: (to, from, next) => {
         let user = {userName:localStorage.username,password:localStorage.password};
-        //let user = store.getters.user;
-     
-        console.log(user);
         if ( (user.userName!="" && user.password!="")){
     next({name:"List"})
   }else {next()}
@@ -30,8 +27,6 @@ export const router = new Router({
 });
 router.beforeEach(( to,from,next) => {
   let user = { userName: localStorage.username, password: localStorage.password };
- // let user = store.getters.user;
-  console.log(user);
   if (to.name !="Login" && (user.userName==="" || user.password==="")){
     next({name:"Login"})
   }else {next()}
